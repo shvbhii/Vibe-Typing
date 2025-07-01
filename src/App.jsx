@@ -9,10 +9,8 @@ import WordsContainer from './components/WordsContainer';
 import Results from './components/Results';
 import Footer from './components/Footer';
 
-
 const GITHUB_URL = "https://github.com/shvbhii/Vibe-Typing";
 const LINKEDIN_URL = "https://www.linkedin.com/in/shvbhi";
-
 
 const WORDS = [ 'the', 'be', 'of', 'and', 'a', 'to', 'in', 'he', 'have', 'it', 'that', 'for', 'they', 'with', 'as', 'not', 'on', 'she', 'at', 'by', 'this', 'we', 'you', 'do', 'but', 'from', 'or', 'which', 'one', 'would', 'all', 'will', 'there', 'say', 'who', 'make', 'when', 'can', 'more', 'if', 'no', 'man', 'out', 'other', 'so', 'what', 'time', 'up', 'go', 'about', 'than', 'into', 'could', 'state', 'only', 'new', 'year', 'some', 'take', 'come', 'these', 'know', 'see', 'use', 'get', 'like', 'then', 'first', 'any', 'work', 'now', 'may', 'such', 'give', 'over', 'think', 'most', 'even', 'find', 'day', 'also', 'after', 'way', 'many', 'must', 'look', 'before', 'great', 'back', 'through', 'long', 'where', 'much', 'should', 'well', 'people', 'down', 'own', 'just', 'because', 'good', 'each', 'those', 'feel', 'seem', 'how', 'high', 'too', 'place', 'little', 'world', 'very', 'still', 'nation', 'hand', 'old', 'life', 'tell', 'write', 'become', 'here', 'show', 'house', 'both', 'between', 'need', 'mean', 'call', 'develop', 'under', 'last', 'right', 'move', 'thing', 'general', 'school', 'never', 'same', 'another', 'begin', 'while', 'number', 'part', 'turn', 'real', 'leave', 'might', 'want', 'point', 'form', 'off', 'child', 'few', 'small', 'since', 'against', 'ask', 'late', 'home', 'interest', 'large', 'person', 'end', 'open', 'public', 'follow', 'during', 'present', 'without', 'again', 'hold', 'govern', 'around', 'possible', 'head', 'consider', 'word', 'program', 'problem', 'however', 'lead', 'system', 'set', 'order', 'eye', 'plan', 'run', 'keep', 'face', 'fact', 'group', 'play', 'stand', 'increase', 'early', 'course', 'change', 'help', 'line', 'city', 'put', 'close', 'case', 'force', 'meet', 'once', 'water', 'upon', 'war', 'far', 'build', 'grow', 'walk', 'hard', 'place', 'young', 'talk', 'method', 'final' ];
 const GAME_TIME = 60;
@@ -31,13 +29,11 @@ function App() {
     const musicRef = useRef(null);
     const wordsContainerRef = useRef(null);
     const mainContainerRef = useRef(null);
-    // *** NEW: Create a ref for our hidden input ***
     const inputRef = useRef(null);
 
-    const getRandomWord = () => WORDS[Math.floor(Math.random() * WORDS.length)];
     const generateWords = (count = 60) => {
         let words = '';
-        for (let i = 0; i < count; i++) { words += getRandomWord() + ' '; }
+        for (let i = 0; i < count; i++) { words += WORDS[Math.floor(Math.random() * WORDS.length)] + ' '; }
         return words.split('').map(char => ({ char: char, status: 'pending' }));
     };
 
@@ -47,8 +43,6 @@ function App() {
         setCharIndex(0);
         setErrors(0);
         setCorrectStrokes(0);
-        setWpm(0);
-        setAccuracy(100);
         const newChars = generateWords();
         newChars[0].status = 'current';
         setCharArray(newChars);
@@ -58,10 +52,7 @@ function App() {
             musicRef.current.pause();
             musicRef.current.currentTime = 0;
         }
-        
-        if (inputRef.current) {
-            inputRef.current.focus();
-        }
+        if (inputRef.current) inputRef.current.focus();
     }, []);
 
     const endTest = useCallback(() => {
@@ -70,14 +61,10 @@ function App() {
         if (musicRef.current) musicRef.current.pause();
     }, []);
 
-   
     const handleAreaFocus = () => {
-        if (inputRef.current) {
-            inputRef.current.focus();
-        }
+        if (inputRef.current) inputRef.current.focus();
     };
     
-   
     useEffect(() => { resetTest(); }, [resetTest]);
 
     useEffect(() => {
@@ -105,23 +92,24 @@ function App() {
     }, [timeLeft, correctStrokes, errors]);
 
     useEffect(() => {
-        const handleKeyPress = (e) => {
-            if (timeLeft === 0) return;
+        
+        const handleKeyDown = (e) => {
+            if (timeLeft === 0) {
+                e.preventDefault();
+                return;
+            }
 
-            if (!isTestActive && e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey) {
+            if (!isTestActive && e.key.length === 1 && e.key !== ' ') {
                 setIsTestActive(true);
                 musicRef.current.play().catch(() => {});
             }
 
-            if (!isTestActive || charIndex >= charArray.length) return;
-            
-            const newCharArray = [...charArray];
-            const currentCharacter = newCharArray[charIndex];
-
             if (e.key === 'Backspace') {
-                e.preventDefault();
+                e.preventDefault(); 
                 if (charIndex > 0) {
-                    currentCharacter.status = 'pending';
+                    setIsTestActive(true); 
+                    const newCharArray = [...charArray];
+                    newCharArray[charIndex].status = 'pending';
                     const prevChar = newCharArray[charIndex - 1];
                     if (prevChar.status === 'incorrect') setErrors(e => e - 1);
                     prevChar.status = 'current';
@@ -131,35 +119,42 @@ function App() {
                 return;
             }
             
-            if (e.key.length !== 1) return;
+            if (e.key.length === 1) {
+                e.preventDefault(); 
+                if (!isTestActive) return;
 
-            if (e.key === currentCharacter.char) {
-                currentCharacter.status = 'correct';
-                setCorrectStrokes(c => c + 1);
-            } else {
-                currentCharacter.status = 'incorrect';
-                setErrors(e => e + 1);
-            }
+                const newCharArray = [...charArray];
+                if (charIndex >= newCharArray.length) return;
 
-            if (charIndex < newCharArray.length - 1) newCharArray[charIndex + 1].status = 'current';
-            
-            setCharArray(newCharArray);
-            setCharIndex(i => i + 1);
+                if (e.key === newCharArray[charIndex].char) {
+                    newCharArray[charIndex].status = 'correct';
+                    setCorrectStrokes(c => c + 1);
+                } else {
+                    newCharArray[charIndex].status = 'incorrect';
+                    setErrors(e => e + 1);
+                }
 
-            if (wordsContainerRef.current) {
-                const nextCharSpan = wordsContainerRef.current.children[charIndex + 1];
-                if (nextCharSpan) {
-                    const containerHeight = wordsContainerRef.current.parentElement.clientHeight;
-                    if (nextCharSpan.offsetTop + LINE_HEIGHT > containerHeight + Math.abs(parseInt(wordsContainerRef.current.style.top) || 0)) {
+                if (charIndex < newCharArray.length - 1) newCharArray[charIndex + 1].status = 'current';
+                
+                setCharArray(newCharArray);
+                setCharIndex(i => i + 1);
+
+                if (wordsContainerRef.current) {
+                    const nextCharSpan = wordsContainerRef.current.children[charIndex + 1];
+                    if (nextCharSpan?.offsetTop > wordsContainerRef.current.offsetHeight - (LINE_HEIGHT * 2)) {
                         wordsContainerRef.current.style.top = `${parseInt(wordsContainerRef.current.style.top || 0) - LINE_HEIGHT}px`;
                     }
                 }
             }
         };
 
-        window.addEventListener('keydown', handleKeyPress);
-        return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [isTestActive, charIndex, charArray, timeLeft]);
+        const input = inputRef.current;
+        input.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+          input.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isTestActive, charIndex, charArray, timeLeft, resetTest]); 
 
     const getTimerColor = () => (timeLeft <= 10 ? 'var(--error-color)' : 'var(--accent-pink)');
     const getStatsColor = () => {
@@ -177,37 +172,15 @@ function App() {
                     <Results wpm={wpm} accuracy={accuracy} onRestart={resetTest} />
                 ) : (
                     <div className="game-layout">
-                        {/* *** NEW: Add onClick to focus the hidden input *** */}
                         <div className="main-game" onClick={handleAreaFocus}>
                             <WordsContainer charArray={charArray} containerRef={wordsContainerRef} />
-                            { !isTestActive && (
-                                <button id="reset-button">
-                                🚀 Start Typing
-                                </button>
-                            )}
+                            { !isTestActive && ( <button id="reset-button">🚀 Start Typing</button> )}
                         </div>
-                        <Stats 
-                            wpm={wpm}
-                            accuracy={accuracy}
-                            timeLeft={timeLeft}
-                            getStatsColor={getStatsColor}
-                            getTimerColor={getTimerColor}
-                        />
+                        <Stats wpm={wpm} accuracy={accuracy} timeLeft={timeLeft} getStatsColor={getStatsColor} getTimerColor={getTimerColor} />
                     </div>
                 )}
                 
-                {/* *** NEW: Add the hidden input field itself *** */}
-                <input
-                    ref={inputRef}
-                    type="text"
-                    className="hidden-input"
-                    // On mobile, this will help prevent autocorrect/autocomplete suggestions
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck="false"
-                />
-
+                <input ref={inputRef} type="text" className="hidden-input" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" />
                 <audio id="chill-music" src="/chill-music.mp3" loop ref={musicRef}></audio>
             </div>
             
