@@ -10,7 +10,7 @@ import Results from './components/Results';
 import Footer from './components/Footer';
 
 
-const GITHUB_URL = "https://github.com/shvbhii/Vibe-Typing.git";
+const GITHUB_URL = "https://github.com/shvbhii/Vibe-Typing";
 const LINKEDIN_URL = "https://www.linkedin.com/in/shvbhi";
 
 
@@ -19,7 +19,6 @@ const GAME_TIME = 60;
 const LINE_HEIGHT = 48;
 
 function App() {
-    
     const [timeLeft, setTimeLeft] = useState(GAME_TIME);
     const [isTestActive, setIsTestActive] = useState(false);
     const [charIndex, setCharIndex] = useState(0);
@@ -29,12 +28,12 @@ function App() {
     const [wpm, setWpm] = useState(0);
     const [accuracy, setAccuracy] = useState(100);
 
-
     const musicRef = useRef(null);
     const wordsContainerRef = useRef(null);
     const mainContainerRef = useRef(null);
+    // *** NEW: Create a ref for our hidden input ***
+    const inputRef = useRef(null);
 
-    
     const getRandomWord = () => WORDS[Math.floor(Math.random() * WORDS.length)];
     const generateWords = (count = 60) => {
         let words = '';
@@ -59,6 +58,10 @@ function App() {
             musicRef.current.pause();
             musicRef.current.currentTime = 0;
         }
+        
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
     }, []);
 
     const endTest = useCallback(() => {
@@ -67,6 +70,14 @@ function App() {
         if (musicRef.current) musicRef.current.pause();
     }, []);
 
+   
+    const handleAreaFocus = () => {
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    };
+    
+   
     useEffect(() => { resetTest(); }, [resetTest]);
 
     useEffect(() => {
@@ -166,10 +177,11 @@ function App() {
                     <Results wpm={wpm} accuracy={accuracy} onRestart={resetTest} />
                 ) : (
                     <div className="game-layout">
-                        <div className="main-game">
+                        {/* *** NEW: Add onClick to focus the hidden input *** */}
+                        <div className="main-game" onClick={handleAreaFocus}>
                             <WordsContainer charArray={charArray} containerRef={wordsContainerRef} />
                             { !isTestActive && (
-                                <button id="reset-button" onClick={() => { document.querySelector('#words-container').focus(); }}>
+                                <button id="reset-button">
                                 🚀 Start Typing
                                 </button>
                             )}
@@ -184,6 +196,18 @@ function App() {
                     </div>
                 )}
                 
+                {/* *** NEW: Add the hidden input field itself *** */}
+                <input
+                    ref={inputRef}
+                    type="text"
+                    className="hidden-input"
+                    // On mobile, this will help prevent autocorrect/autocomplete suggestions
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
+                />
+
                 <audio id="chill-music" src="/chill-music.mp3" loop ref={musicRef}></audio>
             </div>
             
