@@ -1,4 +1,4 @@
-
+// src/App.jsx (Definitive Mobile Fix)
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
@@ -44,7 +44,7 @@ function App() {
         setErrors(0);
         setCorrectStrokes(0);
         const newChars = generateWords();
-        newChars[0].status = 'current';
+        if (newChars.length > 0) newChars[0].status = 'current';
         setCharArray(newChars);
         if (mainContainerRef.current) mainContainerRef.current.classList.remove('test-complete');
         if (wordsContainerRef.current) wordsContainerRef.current.style.top = '0px';
@@ -53,12 +53,6 @@ function App() {
             musicRef.current.currentTime = 0;
         }
         if (inputRef.current) inputRef.current.focus();
-    }, []);
-
-    const endTest = useCallback(() => {
-        setIsTestActive(false);
-        if (mainContainerRef.current) mainContainerRef.current.classList.add('test-complete');
-        if (musicRef.current) musicRef.current.pause();
     }, []);
 
     const handleAreaFocus = () => {
@@ -71,90 +65,84 @@ function App() {
         let timerInterval;
         if (isTestActive && timeLeft > 0) {
             timerInterval = setInterval(() => { setTimeLeft(prevTime => prevTime - 1); }, 1000);
-        } else if (timeLeft === 0) {
-            endTest();
         }
         return () => clearInterval(timerInterval);
-    }, [isTestActive, timeLeft, endTest]);
+    }, [isTestActive, timeLeft]);
     
     useEffect(() => {
-        const elapsedTime = GAME_TIME - timeLeft;
-        if (elapsedTime > 0) {
-            const calculatedWpm = Math.round((correctStrokes / 5) / (elapsedTime / 60));
-            setWpm(calculatedWpm);
-            const totalStrokes = correctStrokes + errors;
-            const calculatedAccuracy = totalStrokes === 0 ? 100 : Math.round((correctStrokes / totalStrokes) * 100);
-            setAccuracy(calculatedAccuracy);
-        } else {
+        if (timeLeft === GAME_TIME) {
             setWpm(0);
             setAccuracy(100);
+            return;
         }
+        const elapsedTime = GAME_TIME - timeLeft;
+        const calculatedWpm = Math.round((correctStrokes / 5) / (elapsedTime / 60));
+        setWpm(calculatedWpm);
+        const totalStrokes = correctStrokes + errors;
+        const calculatedAccuracy = totalStrokes === 0 ? 100 : Math.round((correctStrokes / totalStrokes) * 100);
+        setAccuracy(calculatedAccuracy);
     }, [timeLeft, correctStrokes, errors]);
 
-    useEffect(() => {
-        
-        const handleKeyDown = (e) => {
-            if (timeLeft === 0) {
-                e.preventDefault();
-                return;
-            }
+    // This is the new, correct way to handle keyboard input
+    const handleKeyDown = (e) => {
+        // Stop the event from doing anything else (like typing in the input)
+        e.preventDefault();
 
-            if (!isTestActive && e.key.length === 1 && e.key !== ' ') {
-                setIsTestActive(true);
-                musicRef.current.play().catch(() => {});
-            }
+        if (timeLeft === 0) return;
 
-            if (e.key === 'Backspace') {
-                e.preventDefault(); 
+        const { key } = e;
+
+        // Start the test on the first valid keypress
+        if (!isTestActive && key.length === 1 && key !== ' ') {
+            setIsTestActive(true);
+            musicRef.current.play().catch(() => {});
+        }
+
+        if (key === 'Backspace') {
+            setCharArray(currentChars => {
+                const newChars = [...currentChars];
                 if (charIndex > 0) {
-                    setIsTestActive(true); 
-                    const newCharArray = [...charArray];
-                    newCharArray[charIndex].status = 'pending';
-                    const prevChar = newCharArray[charIndex - 1];
-                    if (prevChar.status === 'incorrect') setErrors(e => e - 1);
-                    prevChar.status = 'current';
-                    setCharArray(newCharArray);
-                    setCharIndex(i => i - 1);
+                    newChars[charIndex].status = 'pending';
+                    if (newChars[charIndex-1].status === 'incorrect') {
+                        setErrors(err => err - 1);
+                    }
+                    newChars[charIndex-1].status = 'current';
                 }
-                return;
-            }
-            
-            if (e.key.length === 1) {
-                e.preventDefault(); 
-                if (!isTestActive) return;
-
-                const newCharArray = [...charArray];
-                if (charIndex >= newCharArray.length) return;
-
-                if (e.key === newCharArray[charIndex].char) {
-                    newCharArray[charIndex].status = 'correct';
-                    setCorrectStrokes(c => c + 1);
-                } else {
-                    newCharArray[charIndex].status = 'incorrect';
-                    setErrors(e => e + 1);
-                }
-
-                if (charIndex < newCharArray.length - 1) newCharArray[charIndex + 1].status = 'current';
-                
-                setCharArray(newCharArray);
-                setCharIndex(i => i + 1);
-
-                if (wordsContainerRef.current) {
-                    const nextCharSpan = wordsContainerRef.current.children[charIndex + 1];
-                    if (nextCharSpan?.offsetTop > wordsContainerRef.current.offsetHeight - (LINE_HEIGHT * 2)) {
-                        wordsContainerRef.current.style.top = `${parseInt(wordsContainerRef.current.style.top || 0) - LINE_HEIGHT}px`;
+                return newChars;
+            });
+            setCharIndex(i => Math.max(0, i - 1));
+            return;
+        }
+        
+        if (key.length === 1) {
+            setCharArray(currentChars => {
+                const newChars = [...currentChars];
+                if (charIndex < newChars.length) {
+                    if (key === newChars[charIndex].char) {
+                        newChars[charIndex].status = 'correct';
+                        setCorrectStrokes(s => s + 1);
+                    } else {
+                        newChars[charIndex].status = 'incorrect';
+                        setErrors(err => err + 1);
+                    }
+                    if (charIndex < newChars.length - 1) {
+                        newChars[charIndex + 1].status = 'current';
                     }
                 }
+                return newChars;
+            });
+
+            setCharIndex(i => i + 1);
+
+            // Scroll logic
+            if (wordsContainerRef.current) {
+                const nextCharSpan = wordsContainerRef.current.children[charIndex + 1];
+                if (nextCharSpan?.offsetTop > wordsContainerRef.current.offsetHeight - (LINE_HEIGHT * 2)) {
+                    wordsContainerRef.current.style.top = `${parseInt(wordsContainerRef.current.style.top || 0) - LINE_HEIGHT}px`;
+                }
             }
-        };
-
-        const input = inputRef.current;
-        input.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-          input.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [isTestActive, charIndex, charArray, timeLeft, resetTest]); 
+        }
+    };
 
     const getTimerColor = () => (timeLeft <= 10 ? 'var(--error-color)' : 'var(--accent-pink)');
     const getStatsColor = () => {
@@ -180,7 +168,15 @@ function App() {
                     </div>
                 )}
                 
-                <input ref={inputRef} type="text" className="hidden-input" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" />
+                {/* We now pass the event handler directly to the input element */}
+                <input
+                    ref={inputRef}
+                    type="text"
+                    className="hidden-input"
+                    onKeyDown={handleKeyDown}
+                    autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
+                />
+
                 <audio id="chill-music" src="/chill-music.mp3" loop ref={musicRef}></audio>
             </div>
             
