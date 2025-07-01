@@ -8,7 +8,7 @@ Vibe Type is a minimalist, visually-appealing typing test application built to p
 
 ---
 
-### 🌐 **[Live Demo](https://demo.vercel.app)**
+### 🌐 **[Live Demo](https://vibe-typing.vercel.app/)**
 
 ---
 
