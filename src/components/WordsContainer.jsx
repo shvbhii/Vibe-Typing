@@ -1,4 +1,3 @@
-// src/components/WordsContainer.jsx
 
 import React from 'react';
 

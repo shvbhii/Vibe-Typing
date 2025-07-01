@@ -1,26 +1,25 @@
-// src/App.jsx
+
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 
-// Import all our new components
 import Header from './components/Header';
 import Stats from './components/Stats';
 import WordsContainer from './components/WordsContainer';
 import Results from './components/Results';
 import Footer from './components/Footer';
 
-// --- CONFIGURATION ---
+
 const GITHUB_URL = "https://github.com/shvbhii/Vibe-Typing.git";
 const LINKEDIN_URL = "https://www.linkedin.com/in/shvbhi";
-// --- END CONFIGURATION ---
+
 
 const WORDS = [ 'the', 'be', 'of', 'and', 'a', 'to', 'in', 'he', 'have', 'it', 'that', 'for', 'they', 'with', 'as', 'not', 'on', 'she', 'at', 'by', 'this', 'we', 'you', 'do', 'but', 'from', 'or', 'which', 'one', 'would', 'all', 'will', 'there', 'say', 'who', 'make', 'when', 'can', 'more', 'if', 'no', 'man', 'out', 'other', 'so', 'what', 'time', 'up', 'go', 'about', 'than', 'into', 'could', 'state', 'only', 'new', 'year', 'some', 'take', 'come', 'these', 'know', 'see', 'use', 'get', 'like', 'then', 'first', 'any', 'work', 'now', 'may', 'such', 'give', 'over', 'think', 'most', 'even', 'find', 'day', 'also', 'after', 'way', 'many', 'must', 'look', 'before', 'great', 'back', 'through', 'long', 'where', 'much', 'should', 'well', 'people', 'down', 'own', 'just', 'because', 'good', 'each', 'those', 'feel', 'seem', 'how', 'high', 'too', 'place', 'little', 'world', 'very', 'still', 'nation', 'hand', 'old', 'life', 'tell', 'write', 'become', 'here', 'show', 'house', 'both', 'between', 'need', 'mean', 'call', 'develop', 'under', 'last', 'right', 'move', 'thing', 'general', 'school', 'never', 'same', 'another', 'begin', 'while', 'number', 'part', 'turn', 'real', 'leave', 'might', 'want', 'point', 'form', 'off', 'child', 'few', 'small', 'since', 'against', 'ask', 'late', 'home', 'interest', 'large', 'person', 'end', 'open', 'public', 'follow', 'during', 'present', 'without', 'again', 'hold', 'govern', 'around', 'possible', 'head', 'consider', 'word', 'program', 'problem', 'however', 'lead', 'system', 'set', 'order', 'eye', 'plan', 'run', 'keep', 'face', 'fact', 'group', 'play', 'stand', 'increase', 'early', 'course', 'change', 'help', 'line', 'city', 'put', 'close', 'case', 'force', 'meet', 'once', 'water', 'upon', 'war', 'far', 'build', 'grow', 'walk', 'hard', 'place', 'young', 'talk', 'method', 'final' ];
 const GAME_TIME = 60;
 const LINE_HEIGHT = 48;
 
 function App() {
-    // State management remains in the top-level component
+    
     const [timeLeft, setTimeLeft] = useState(GAME_TIME);
     const [isTestActive, setIsTestActive] = useState(false);
     const [charIndex, setCharIndex] = useState(0);
@@ -30,12 +29,12 @@ function App() {
     const [wpm, setWpm] = useState(0);
     const [accuracy, setAccuracy] = useState(100);
 
-    // Refs also stay here as they interact with logic
+
     const musicRef = useRef(null);
     const wordsContainerRef = useRef(null);
     const mainContainerRef = useRef(null);
 
-    // All logic and helper functions remain in App.jsx
+    
     const getRandomWord = () => WORDS[Math.floor(Math.random() * WORDS.length)];
     const generateWords = (count = 60) => {
         let words = '';
