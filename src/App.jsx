@@ -155,6 +155,14 @@ function App() {
         if (wpm > 40) return 'var(--cursor-color)';
         return 'var(--text-primary)';
     };
+
+    const getMochiMood = () => {
+        if (gameState.timeLeft === 0) return 'Napping';
+        if (wpm >= 55) return 'Zooming';
+        if (wpm >= 35) return 'Focused';
+        if (accuracy < 85) return 'Bouncy';
+        return 'Ready';
+    };
     
     return (
         <>
@@ -166,8 +174,21 @@ function App() {
                 ) : (
                     <div className="game-layout">
                         <div className="main-game" onClick={handleAreaFocus}>
+                            <div className="mochi-panel">
+                                <div className="mochi" aria-hidden="true">
+                                    <div className="mochi-face">
+                                        <span className="eye left" />
+                                        <span className="eye right" />
+                                        <span className="smile" />
+                                    </div>
+                                </div>
+                                <div className="mochi-copy">
+                                    <span className="mochi-label">Mochi mode</span>
+                                    <strong>{getMochiMood()}</strong>
+                                </div>
+                            </div>
                             <WordsContainer charArray={gameState.charArray} containerRef={wordsContainerRef} />
-                            { !gameState.isTestActive && ( <button id="reset-button">🚀 Start Typing</button> )}
+                            { !gameState.isTestActive && ( <button id="reset-button">🍡 Start Mochi Run</button> )}
                         </div>
                         <Stats wpm={wpm} accuracy={accuracy} timeLeft={gameState.timeLeft} getStatsColor={getStatsColor} getTimerColor={getTimerColor} />
                     </div>
